@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Inventario - Tienda El Angelito</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Arial', system-ui, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(145deg, #e6b800 0%, #ffcc00 100%);
+            min-height: 100vh;
+            padding: 24px 20px;
+        }
+
+        /* Contenedor principal estilo tarjeta */
+        .inventory-container {
+            max-width: 1300px;
+            margin: 0 auto;
+            background: rgba(255, 235, 150, 0.92);
+            border-radius: 48px;
+            backdrop-filter: blur(2px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(255,255,200,0.8);
+            overflow: hidden;
+            padding: 24px 28px 32px;
+            transition: all 0.2s;
+        }
+
+        /* Header dorado */
+        .main-header {
+            text-align: center;
+            margin-bottom: 28px;
+            border-bottom: 3px solid #ffdd77;
+            padding-bottom: 18px;
+        }
+
+        .main-header h1 {
+            font-size: 2.4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #a65d00, #ffd966);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            letter-spacing: -0.5px;
+        }
+
+        .main-header p {
+            color: #8b5e00;
+            font-weight: 500;
+            margin-top: 8px;
+            font-size: 0.95rem;
+        }
+
+        /* Panel de formulario */
+        .form-panel {
+            background: #fff7e0;
+            border-radius: 40px;
+            padding: 20px 24px;
+            margin-bottom: 28px;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+            border: 1px solid #ffeaac;
+        }
+
+        .form-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 170px;
+        }
+
+        .input-group label {
+            font-weight: bold;
+            color: #7a4d00;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
+        }
+
+        .input-group input {
+            padding: 12px 16px;
+            border-radius: 60px;
+            border: 2px solid #ffdd99;
+            background: white;
+            font-size: 1rem;
+            transition: 0.2s;
+            outline: none;
+            font-weight: 500;
+        }
+
+        .input-group input:focus {
+            border-color: #ffb347;
+            box-shadow: 0 0 0 3px rgba(255, 180, 70, 0.3);
+        }
+
+        .btn-primary {
+            background: #ffb347;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #3e2a00;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            background: #ff9f1a;
+            transform: scale(0.96);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .btn-danger {
+            background: #e0674a;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #c94f31;
+        }
+
+        .btn-secondary {
+            background: #f5cd7a;
+            color: #5a3a00;
+        }
+        .btn-secondary:hover {
+            background: #edbc56;
+        }
+
+        /* Panel de botones de control (cantidad/precio) */
+        .control-bar {
+            background: #fff0cc;
+            border-radius: 60px;
+            padding: 14px 20px;
+            margin-bottom: 28px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 16px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+
+        .control-group {
+            display: flex;
+            gap: 12px;
+            background: #ffefcf;
+            padding: 6px 16px;
+            border-radius: 50px;
+            align-items: center;
+        }
+
+        .control-group span {
+            font-weight: bold;
+            color: #a7671a;
+        }
+
+        .icon-btn {
+            background: #ffdd99;
+            border: none;
+            font-size: 1.2rem;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.1s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .icon-btn:hover {
+            background: #ffcc77;
+            transform: translateY(-1px);
+        }
+
+        /* Tabla inventario estilo Treeview */
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 32px;
+            background: #fff9ed;
+            margin: 16px 0 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+
+        .inventory-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 1rem;
+            min-width: 600px;
+        }
+
+        .inventory-table th {
+            background: #ffd966;
+            color: #4a2e00;
+            padding: 16px 12px;
+            font-weight: 800;
+            font-size: 1.05rem;
+            text-align: left;
+            border-bottom: 2px solid #e6b422;
+        }
+
+        .inventory-table td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #ffe3aa;
+            color: #3a2a0e;
+            font-weight: 500;
+        }
+
+        .inventory-table tr {
+            transition: background 0.1s;
+            cursor: pointer;
+        }
+
+        .inventory-table tr:hover {
+            background: #fff3da;
+        }
+
+        .selected-row {
+            background: #ffe6b3 !important;
+            box-shadow: inset 0 0 0 2px #ffbc5e;
+        }
+
+        .total-footer {
+            background: #ffecb3;
+            border-radius: 50px;
+            padding: 16px 24px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .total-footer span {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #c26500;
+            background: #fff0cc;
+            padding: 6px 24px;
+            border-radius: 50px;
+            display: inline-block;
+        }
+
+        .footer-note {
+            text-align: center;
+            font-size: 0.75rem;
+            color: #a5752e;
+            margin-top: 24px;
+        }
+
+        @media (max-width: 750px) {
+            .inventory-container {
+                padding: 16px;
+            }
+            .form-grid {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .control-bar {
+                flex-direction: column;
+                align-items: center;
+            }
+            .icon-btn {
+                padding: 6px 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="inventory-container">
+    <div class="main-header">
+        <h1>📦 INVENTARIO - TIENDA EL ANGELITO</h1>
+        <p>✨ Gestión completa de productos · stock · precios ✨</p>
+    </div>
+
+    <!-- Formulario agregar producto -->
+    <div class="form-panel">
+        <div class="form-grid">
+            <div class="input-group">
+                <label>📝 Producto</label>
+                <input type="text" id="productoNombre" placeholder="Ej: Laptop, Cuaderno, Mouse..." autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label>🔢 Cantidad</label>
+                <input type="number" id="productoCantidad" placeholder="Unidades" value="1" min="0">
+            </div>
+            <div class="input-group">
+                <label>💰 Precio (MXN)</label>
+                <input type="number" id="productoPrecio" placeholder="0.00" step="0.01" min="0">
+            </div>
+            <div>
+                <button class="btn-primary" id="agregarBtn">➕ Agregar producto</button>
+                <button class="btn-primary btn-danger" id="eliminarBtn" style="background:#d95b3a;">🗑️ Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barra de controles rápidos (Cantidad / Precio) -->
+    <div class="control-bar">
+        <div class="control-group">
+            <span>📊 Cantidad</span>
+            <button class="icon-btn" id="aumentarCantidadBtn">➕ +1</button>
+            <button class="icon-btn" id="descontarCantidadBtn">➖ -1</button>
+        </div>
+        <div class="control-group">
+            <span>💲 Precio</span>
+            <button class="icon-btn" id="subirPrecioBtn">⬆️ +$1</button>
+            <button class="icon-btn" id="bajarPrecioBtn">⬇️ -$1</button>
+        </div>
+        <div style="font-size:0.8rem; color:#b87c2a; margin-left: auto;">
+            ⚡ Selecciona un producto para modificar
+        </div>
+    </div>
+
+    <!-- Tabla de inventario (TreeView equivalente) -->
+    <div class="table-wrapper">
+        <table class="inventory-table" id="inventoryTable">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- filas dinámicas -->
+                <tr class="empty-row"><td colspan="3" style="text-align:center; padding: 40px;">✨ No hay productos. Agrega uno ✨</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Total inventario -->
+    <div class="total-footer">
+        <span id="totalInventario">Total inventario: $0</span>
+    </div>
+    <div class="footer-note">
+        💾 Los datos se guardan automáticamente en tu navegador (localStorage) · ¡Al estilo Angelito!
+    </div>
+</div>
+
+<script>
+    // ---------- CLON FUNCIONALIDAD ORIGINAL (inventario.json -> localStorage) ----------
+    // Representación de datos: array de objetos { nombre, cantidad, precio (numérico) }
+    let inventarioArray = [];
+
+    // Referencias DOM
+    const tbody = document.getElementById('tableBody');
+    const totalSpan = document.getElementById('totalInventario');
+    const nombreInput = document.getElementById('productoNombre');
+    const cantidadInput = document.getElementById('productoCantidad');
+    const precioInput = document.getElementById('productoPrecio');
+
+    // Botones
+    const agregarBtn = document.getElementById('agregarBtn');
+    const eliminarBtn = document.getElementById('eliminarBtn');
+    const aumentarCantidadBtn = document.getElementById('aumentarCantidadBtn');
+    const descontarCantidadBtn = document.getElementById('descontarCantidadBtn');
+    const subirPrecioBtn = document.getElementById('subirPrecioBtn');
+    const bajarPrecioBtn = document.getElementById('bajarPrecioBtn');
+
+    // Variable para producto seleccionado (fila actual)
+    let selectedRowId = null;        // usaremos el índice o un identificador único
+    let selectedIndex = -1;
+
+    // ========== FUNCIONES PERSISTENCIA (localStorage) ==========
+    const STORAGE_KEY = "inventario_el_angelito";
+
+    function guardarDatos() {
+        // guarda el array en localStorage
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(inventarioArray));
+    }
+
+    function cargarDatos() {
+        const dataRaw = localStorage.getItem(STORAGE_KEY);
+        if (dataRaw) {
+            try {
+                inventarioArray = JSON.parse(dataRaw);
+                // asegurar que cada elemento tenga estructura correcta
+                inventarioArray = inventarioArray.filter(item => item && typeof item === 'object');
+                for (let item of inventarioArray) {
+                    if (typeof item.precio !== 'number') item.precio = parseFloat(item.precio) || 0;
+                    if (typeof item.cantidad !== 'number') item.cantidad = parseInt(item.cantidad) || 0;
+                    if (!item.nombre) item.nombre = "Producto";
+                }
+            } catch(e) { inventarioArray = []; }
+        } else {
+            // datos de ejemplo para mostrar que funciona igual que el original
+            inventarioArray = [];
+        }
+    }
+
+    // ========== ACTUALIZAR TABLA COMPLETA (TreeView style) ==========
+    function calcularTotalInventario() {
+        let total = 0;
+        for (let item of inventarioArray) {
+            total += (item.cantidad * item.precio);
+        }
+        totalSpan.innerText = `Total inventario: $${total.toFixed(2)}`;
+    }
+
+    function renderizarTabla() {
+        tbody.innerHTML = '';
+        if (inventarioArray.length === 0) {
+            const emptyRow = document.createElement('tr');
+            emptyRow.className = 'empty-row';
+            emptyRow.innerHTML = '<td colspan="3" style="text-align:center; padding: 40px;">✨ No hay productos. Agrega uno ✨</td>';
+            tbody.appendChild(emptyRow);
+            calcularTotalInventario();
+            return;
+        }
+
+        for (let i = 0; i < inventarioArray.length; i++) {
+            const prod = inventarioArray[i];
+            const row = document.createElement('tr');
+            row.setAttribute('data-index', i);
+            if (selectedIndex === i) {
+                row.classList.add('selected-row');
+            }
+            // celdas
+            const cellNombre = document.createElement('td');
+            cellNombre.textContent = prod.nombre;
+            const cellCantidad = document.createElement('td');
+            cellCantidad.textContent = prod.cantidad;
+            const cellPrecio = document.createElement('td');
+            cellPrecio.textContent = `$${prod.precio.toFixed(2)}`;
+            
+            row.appendChild(cellNombre);
+            row.appendChild(cellCantidad);
+            row.appendChild(cellPrecio);
+            
+            // Evento para seleccionar fila
+            row.addEventListener('click', (function(idx) {
+                return function() { seleccionarFila(idx); };
+            })(i));
+            
+            tbody.appendChild(row);
+        }
+        calcularTotalInventario();
+    }
+
+    function seleccionarFila(index) {
+        selectedIndex = index;
+        renderizarTabla();   // re-render para resaltar
+        // opcional: mostrar feedback visual
+        if (index !== -1 && inventarioArray[index]) {
+            // también podríamos mostrar en consola o tooltip, pero es suficiente
+        }
+    }
+
+    // Limpiar selección
+    function limpiarSeleccion() {
+        selectedIndex = -1;
+        renderizarTabla();
+    }
+
+    // ========== OPERACIONES IGUAL AL CÓDIGO ORIGINAL ==========
+    function agregarProducto() {
+        let nombre = nombreInput.value.trim();
+        let cantidad = parseInt(cantidadInput.value);
+        let precio = parseFloat(precioInput.value);
+
+        if (nombre === "") {
+            alert("❌ Error: Completa el nombre del producto.");
+            return;
+        }
+        if (isNaN(cantidad) || cantidad < 0) cantidad = 0;
+        if (isNaN(precio) || precio < 0) precio = 0;
+
+        // Agregar al array
+        inventarioArray.push({
+            nombre: nombre,
+            cantidad: cantidad,
+            precio: precio
+        });
+
+        guardarDatos();
+        limpiarSeleccion();     // reiniciar selección
+        renderizarTabla();
+
+        // Limpiar campos
+        nombreInput.value = "";
+        cantidadInput.value = "1";
+        precioInput.value = "";
+    }
+
+    function eliminarProducto() {
+        if (selectedIndex === -1 || selectedIndex >= inventarioArray.length) {
+            alert("⚠️ Error: Selecciona un producto de la tabla para eliminar.");
+            return;
+        }
+        // Confirmar (similar a messagebox)
+        const productoNombre = inventarioArray[selectedIndex].nombre;
+        if (confirm(`¿Eliminar permanentemente "${productoNombre}"?`)) {
+            inventarioArray.splice(selectedIndex, 1);
+            guardarDatos();
+            selectedIndex = -1;
+            renderizarTabla();
+        }
+    }
+
+    function aumentarCantidad() {
+        if (selectedIndex === -1 || !inventarioArray[selectedIndex]) {
+            alert("⚠️ Selecciona un producto para aumentar su cantidad.");
+            return;
+        }
+        inventarioArray[selectedIndex].cantidad += 1;
+        guardarDatos();
+        renderizarTabla();  // mantiene la selección en el mismo índice
+    }
+
+    function descontarCantidad() {
+        if (selectedIndex === -1 || !inventarioArray[selectedIndex]) {
+            alert("⚠️ Selecciona un producto para descontar cantidad.");
+            return;
+        }
+        let nuevaCantidad = inventarioArray[selectedIndex].cantidad - 1;
+        if (nuevaCantidad < 0) nuevaCantidad = 0;
+        inventarioArray[selectedIndex].cantidad = nuevaCantidad;
+        guardarDatos();
+        renderizarTabla();
+    }
+
+    function subirPrecio() {
+        if (selectedIndex === -1 || !inventarioArray[selectedIndex]) {
+            alert("⚠️ Selecciona un producto para subir el precio.");
+            return;
+        }
+        inventarioArray[selectedIndex].precio += 1;
+        guardarDatos();
+        renderizarTabla();
+    }
+
+    function bajarPrecio() {
+        if (selectedIndex === -1 || !inventarioArray[selectedIndex]) {
+            alert("⚠️ Selecciona un producto para bajar el precio.");
+            return;
+        }
+        let nuevoPrecio = inventarioArray[selectedIndex].precio - 1;
+        if (nuevoPrecio < 0) nuevoPrecio = 0;
+        inventarioArray[selectedIndex].precio = nuevoPrecio;
+        guardarDatos();
+        renderizarTabla();
+    }
+
+    // ========== EVENTOS Y CARGA INICIAL ==========
+    function init() {
+        cargarDatos();
+        renderizarTabla();
+        
+        // Botones principales
+        agregarBtn.addEventListener('click', agregarProducto);
+        eliminarBtn.addEventListener('click', eliminarProducto);
+        aumentarCantidadBtn.addEventListener('click', aumentarCantidad);
+        descontarCantidadBtn.addEventListener('click', descontarCantidad);
+        subirPrecioBtn.addEventListener('click', subirPrecio);
+        bajarPrecioBtn.addEventListener('click', bajarPrecio);
+        
+        // También al hacer click en la tabla se maneja por el render, pero doble aseguramiento
+        // Enter en inputs opcional
+        const inputs = [nombreInput, cantidadInput, precioInput];
+        inputs.forEach(inp => {
+            inp.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') agregarProducto();
+            });
+        });
+    }
+
+    init();
+</script>
+</body>
+</html>
